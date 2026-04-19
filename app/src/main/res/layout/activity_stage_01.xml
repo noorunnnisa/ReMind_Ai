@@ -43,7 +43,6 @@
 
     </LinearLayout>
 
-
     <!-- SCROLLABLE CONTENT -->
     <ScrollView
         android:layout_width="0dp"

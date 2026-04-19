@@ -22,7 +22,8 @@
             android:id="@+id/btnBack"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_arrow_back" />
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="#373737" />
 
         <TextView
             android:layout_width="0dp"

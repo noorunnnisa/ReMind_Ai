@@ -1,4 +1,4 @@
-package com.example.remind_ai.stage3
+package com.example.remind_ai.Stage3
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

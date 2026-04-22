@@ -10,9 +10,6 @@ import com.example.remind_ai.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import com.example.remind_ai.stage1.Stage1DashboardActivity
-import com.example.remind_ai.stage2.Stage2DashboardActivity
-import com.example.remind_ai.stage3.Stage3PatientDashboardActivity
 
 class LoginActivity : AppCompatActivity() {
 
@@ -86,6 +83,7 @@ class LoginActivity : AppCompatActivity() {
 
         database.reference.child("users").child(uid).get()
             .addOnSuccessListener { snapshot ->
+
                 if (!snapshot.exists()) {
                     btnLogin.isEnabled = true
                     btnLogin.text = "Log In"
@@ -93,25 +91,10 @@ class LoginActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                val role = snapshot.child("role").getValue(String::class.java).orEmpty()
-                val stage = snapshot.child("stage").getValue(String::class.java).orEmpty()
-
-                val intent = when (role) {
-                    "caregiver" -> Intent(this, CaregiverHomeActivity::class.java)
-
-                    "patient" -> {
-                        when (stage) {
-                            "Stage 1" -> Intent(this, Stage1DashboardActivity::class.java)
-                            "Stage 2" -> Intent(this, Stage2DashboardActivity::class.java)
-                            "Stage 3" -> Intent(this, Stage3PatientDashboardActivity::class.java)
-                            else -> Intent(this, StageDetectionActivity::class.java)
-                        }
-                    }
-
-                    else -> Intent(this, RoleSelectionActivity::class.java)
-                }
-
                 Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
+
+                // ✅ ALWAYS go to RoleSelectionActivity
+                val intent = Intent(this, RoleSelectionActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
                 finish()
@@ -119,11 +102,7 @@ class LoginActivity : AppCompatActivity() {
             .addOnFailureListener { e ->
                 btnLogin.isEnabled = true
                 btnLogin.text = "Log In"
-                Toast.makeText(
-                    this,
-                    "Failed to fetch user data: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
 }

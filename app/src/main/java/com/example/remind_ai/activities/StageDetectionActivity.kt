@@ -2,7 +2,7 @@ package com.example.remind_ai.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.remind_ai.R
@@ -11,17 +11,17 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import java.util.UUID
+
 import com.example.remind_ai.stage1.Stage1DashboardActivity
 import com.example.remind_ai.stage2.Stage2DashboardActivity
-import com.example.remind_ai.stage3.Stage3PatientDashboardActivity
-
+import com.example.remind_ai.Stage3.Stage3PatientDashboardActivity
 
 class StageDetectionActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
 
-    private lateinit var btnBack: ImageButton
+    private lateinit var btnBack: ImageView
     private lateinit var btnUploadMRI: MaterialButton
     private lateinit var etMemoryScore: TextInputEditText
     private lateinit var etCognitiveScore: TextInputEditText
@@ -42,7 +42,11 @@ class StageDetectionActivity : AppCompatActivity() {
         etBehaviorScore = findViewById(R.id.etBehaviorScore)
         btnAnalyzeStage = findViewById(R.id.btnAnalyzeStage)
 
+        // ✅ FIXED BACK BUTTON
         btnBack.setOnClickListener {
+            val intent = Intent(this, RoleSelectionActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             finish()
         }
 
@@ -81,8 +85,7 @@ class StageDetectionActivity : AppCompatActivity() {
         savePatientAssessment(detectedStage, memoryScore, cognitiveScore, behaviorScore)
     }
 
-    // Temporary logic
-    // Later you will replace this with your AI model result
+    // Temporary logic (later replace with AI model)
     private fun detectStage(memory: Int, cognitive: Int, behavior: Int): String {
         val average = (memory + cognitive + behavior) / 3
 

@@ -12,7 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import java.util.UUID
 
-import com.example.remind_ai.stage1.Stage1DashboardActivity
+import com.example.remind_ai.stage1.Stage1Activity
 import com.example.remind_ai.stage2.Stage2DashboardActivity
 import com.example.remind_ai.Stage3.Stage3PatientDashboardActivity
 
@@ -177,7 +177,7 @@ class StageDetectionActivity : AppCompatActivity() {
 
     private fun openDashboard(stage: String) {
         val intent = when (stage) {
-            "Stage 1" -> Intent(this, Stage1DashboardActivity::class.java)
+            "Stage 1" -> Intent(this, Stage1Activity::class.java)
             "Stage 2" -> Intent(this, Stage2DashboardActivity::class.java)
             else -> Intent(this, Stage3PatientDashboardActivity::class.java)
         }

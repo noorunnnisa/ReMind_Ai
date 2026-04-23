@@ -40,3 +40,19 @@ data class AssignedPatient(
     val stage: String = "",
     val linkedAt: Long = 0L
 )
+
+data class ReminderModel(
+    val id: String = "",
+    val title: String = "",
+    val date: String = "",
+    val time: String = "",
+    val repeat: String = "",
+    val notes: String = "",
+    val timestamp: Long = 0L
+)
+
+data class ChecklistItem(
+    val id: String = "",
+    val title: String = "",
+    val checked: Boolean = false
+)

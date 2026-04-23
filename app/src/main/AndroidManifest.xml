@@ -3,6 +3,11 @@
     package="com.example.remind_ai">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+
 
     <application
         android:allowBackup="true"
@@ -11,6 +16,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.RemindAI">
+
+        <activity
+            android:name="com.example.remind_ai.stage1.Stage1Activity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.remind_ai.stage1.AddReminderS1Activity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.remind_ai.stage2.Stage2DashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.remind_ai.Stage3.Stage3PatientDashboardActivity"
+            android:exported="false" />
 
         <activity
             android:name=".activities.SplashActivity"
@@ -44,18 +65,26 @@
         <activity
             android:name=".activities.CaregiverHomeActivity"
             android:exported="false" />
-
-        <activity
-            android:name=".activities.Stage1DashboardActivity"
+        <receiver
+            android:name="com.example.remind_ai.stage1.ReminderReceiver"
             android:exported="false" />
 
         <activity
-            android:name=".activities.Stage2DashboardActivity"
+            android:name=".stage1.VoiceAssistantActivity"
+            android:exported="false" />
+
+        <receiver
+            android:name=".stage1.ChecklistReminderReceiver"
             android:exported="false" />
 
         <activity
-            android:name=".activities.Stage3PatientDashboardActivity"
+            android:name=".stage1.RoutineChecklistActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".stage1.QuickThoughtsActivity"
+            android:exported="false" />
+
 
     </application>
 

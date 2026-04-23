@@ -89,6 +89,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvTodayLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Today"
@@ -96,6 +97,7 @@
                             android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/tvCurrentDate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Sunday, February 22, 2026"
@@ -133,6 +135,7 @@
                 <!-- Daily Reminder -->
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardDailyReminders"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_marginEnd="6dp"
@@ -169,6 +172,7 @@
                 <!-- Voice Assistant -->
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardVoiceAssistant"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_marginStart="6dp"
@@ -251,6 +255,7 @@
                 <!-- Checklist -->
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardRoutineChecklist"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_marginStart="6dp"
@@ -331,6 +336,7 @@
                 <!-- Quick Thought Pad -->
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardQuickThoughtsPad"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_marginStart="6dp"

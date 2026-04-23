@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_gradient">
 
-    <!-- HEADER -->
     <LinearLayout
         android:id="@+id/headerBg"
         android:layout_width="0dp"
@@ -22,8 +20,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/btnBack"
@@ -40,21 +38,19 @@
                 android:text="ROUTINE CHECKLIST"
                 android:textColor="#4A3FA0"
                 android:textSize="22sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
         </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="6dp"
             android:text="Stay on top of your daily habits"
             android:textColor="#6B5FB5"
-            android:textSize="14sp"
-            android:layout_gravity="center"
-            android:layout_marginTop="6dp"/>
-
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- CONTENT -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -69,122 +65,68 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- PROGRESS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_edittext_dark"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/tvProgress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Completed: 2 of 7"
+                    android:text="Completed: 0 of 0"
                     android:textColor="#333333"
                     android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <ProgressBar
+                    android:id="@+id/progressChecklist"
+                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="8dp"
                     android:layout_marginTop="8dp"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:progress="30"/>
+                    android:max="1"
+                    android:progress="0" />
             </LinearLayout>
 
-            <!-- DATE -->
             <TextView
+                android:id="@+id/tvChecklistDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Tuesday, April 30"
                 android:textColor="#333333"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp"/>
+                android:textStyle="bold" />
 
-            <!-- TASK 1 -->
             <LinearLayout
+                android:id="@+id/tasksContainer"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edittext_dark"
-                android:gravity="center_vertical"
-                android:padding="12dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="6dp" />
 
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Wake up at 7:00 AM"
-                    android:textColor="#333333"
-                    android:textSize="15sp"
-                    android:layout_marginStart="10dp"/>
-            </LinearLayout>
-
-            <!-- TASK 2 -->
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvEmptyTasks"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edittext_dark"
-                android:gravity="center_vertical"
-                android:padding="12dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="No tasks added yet"
+                android:textColor="#777777"
+                android:textSize="15sp" />
 
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Drink 8 glasses of water"
-                    android:textColor="#333333"
-                    android:textSize="15sp"
-                    android:layout_marginStart="10dp"/>
-            </LinearLayout>
-
-            <!-- TASK 3 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edittext_dark"
-                android:gravity="center_vertical"
-                android:padding="12dp"
-                android:orientation="horizontal">
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Morning walk or exercise"
-                    android:textColor="#333333"
-                    android:textSize="15sp"
-                    android:layout_marginStart="10dp"/>
-            </LinearLayout>
-
-            <!-- ADD NEW TASK BUTTON -->
             <Button
                 android:id="@+id/btnAddTask"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_button"
                 android:text="+ Add New Task"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/bg_button"/>
+                android:textSize="16sp" />
 
         </LinearLayout>
 

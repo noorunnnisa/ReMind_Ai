@@ -2,7 +2,9 @@ package com.example.remind_ai.stage1
 
 import android.Manifest
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -16,38 +18,35 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.remind_ai.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import java.util.Calendar
+import org.json.JSONArray
 import java.util.Locale
 
 class VoiceAssistantActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private lateinit var btnBack: ImageView
     private lateinit var micBtn: ImageView
-    private lateinit var tvSpeak: TextView
     private lateinit var tvGoodMorning: TextView
     private lateinit var tvHelp: TextView
+    private lateinit var tvSpeak: TextView
 
     private lateinit var btnReminder: Button
     private lateinit var btnMessages: Button
     private lateinit var btnSchedule: Button
     private lateinit var btnFamily: Button
 
-    private var speechRecognizer: SpeechRecognizer? = null
+    private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var speechIntent: Intent
-    private var textToSpeech: TextToSpeech? = null
+    private lateinit var textToSpeech: TextToSpeech
+    private lateinit var prefs: SharedPreferences
 
-    private var isListening = false
     private var isTtsReady = false
 
     private val audioPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
-                startVoiceListening()
+                startListening()
             } else {
                 Toast.makeText(this, "Microphone permission is required", Toast.LENGTH_SHORT).show()
-                tvHelp.text = "Microphone permission is required"
             }
         }
 
@@ -55,312 +54,260 @@ class VoiceAssistantActivity : AppCompatActivity(), TextToSpeech.OnInitListener 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_voiceassistant_s1)
 
-        initViews()
-        setGreeting()
-
-        tvSpeak.text = "Tap to Speak"
-        tvHelp.text = "Tap mic and speak slowly"
-
-        textToSpeech = TextToSpeech(this, this)
-        setupSpeechRecognizer()
-        setupClickListeners()
-
-        micBtn.setOnLongClickListener {
-            speak("Testing voice response")
-            true
-        }
-    }
-
-    private fun initViews() {
         btnBack = findViewById(R.id.btnBack)
         micBtn = findViewById(R.id.micBtn)
-        tvSpeak = findViewById(R.id.tvSpeak)
         tvGoodMorning = findViewById(R.id.tvGoodMorning)
         tvHelp = findViewById(R.id.tvHelp)
+        tvSpeak = findViewById(R.id.tvSpeak)
 
         btnReminder = findViewById(R.id.btnReminder)
         btnMessages = findViewById(R.id.btnMessages)
         btnSchedule = findViewById(R.id.btnSchedule)
         btnFamily = findViewById(R.id.btnFamily)
-    }
 
-    private fun setGreeting() {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val greeting = when {
-            hour < 12 -> "Good Morning,"
-            hour < 17 -> "Good Afternoon,"
-            else -> "Good Evening,"
-        }
-        tvGoodMorning.text = greeting
-    }
+        prefs = getSharedPreferences("remind_ai_prefs", MODE_PRIVATE)
+        textToSpeech = TextToSpeech(this, this)
 
-    private fun setupClickListeners() {
+        setupGreeting()
+        setupSpeechRecognizer()
+
         btnBack.setOnClickListener {
             finish()
         }
 
         micBtn.setOnClickListener {
-            checkAudioPermissionAndStart()
+            checkPermissionAndListen()
+        }
+
+        tvSpeak.setOnClickListener {
+            checkPermissionAndListen()
         }
 
         btnReminder.setOnClickListener {
-            speak("Opening reminder screen")
             startActivity(Intent(this, AddReminderS1Activity::class.java))
         }
 
         btnMessages.setOnClickListener {
-            speak("Quick thought pad screen will open here")
+            startActivity(Intent(this, QuickThoughtsActivity::class.java))
         }
 
         btnSchedule.setOnClickListener {
-            speak("Daily schedule screen will open here")
+            speak("Opening reminders for your daily schedule")
+            startActivity(Intent(this, AddReminderS1Activity::class.java))
         }
 
         btnFamily.setOnClickListener {
-            speak("My journal screen will open here")
+            startActivity(Intent(this, MyJournalActivity::class.java))
         }
     }
 
-    private fun checkAudioPermissionAndStart() {
+    private fun setupGreeting() {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        tvGoodMorning.text = when {
+            hour < 12 -> "Good Morning,"
+            hour < 17 -> "Good Afternoon,"
+            else -> "Good Evening,"
+        }
+        tvHelp.text = "How can I help you today?"
+    }
+
+    private fun setupSpeechRecognizer() {
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
+        }
+
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {
+                tvSpeak.text = "Listening..."
+            }
+
+            override fun onBeginningOfSpeech() {
+                tvSpeak.text = "Listening..."
+            }
+
+            override fun onRmsChanged(rmsdB: Float) = Unit
+            override fun onBufferReceived(buffer: ByteArray?) = Unit
+
+            override fun onEndOfSpeech() {
+                tvSpeak.text = "Processing..."
+            }
+
+            override fun onError(error: Int) {
+                tvSpeak.text = "Tap to Speak"
+                Toast.makeText(this@VoiceAssistantActivity, "Could not understand. Try again.", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onResults(results: Bundle?) {
+                tvSpeak.text = "Tap to Speak"
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                val spokenText = matches?.firstOrNull()?.lowercase(Locale.getDefault()).orEmpty()
+
+                if (spokenText.isNotEmpty()) {
+                    handleVoiceCommand(spokenText)
+                }
+            }
+
+            override fun onPartialResults(partialResults: Bundle?) = Unit
+            override fun onEvent(eventType: Int, params: Bundle?) = Unit
+        })
+    }
+
+    private fun checkPermissionAndListen() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
         ) {
-            startVoiceListening()
+            startListening()
         } else {
             audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
-    private fun setupSpeechRecognizer() {
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            Toast.makeText(this, "Speech recognition not available", Toast.LENGTH_LONG).show()
-            tvHelp.text = "Speech recognition not available on this device"
-            return
-        }
-
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
-
-        speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-US")
-            putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, "en-US")
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 5000L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 5000L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 3000L)
-        }
-
-        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {
-                isListening = true
-                tvSpeak.text = "Listening..."
-                tvHelp.text = "Speak clearly now"
-            }
-
-            override fun onBeginningOfSpeech() {
-                tvSpeak.text = "Hearing you..."
-            }
-
-            override fun onRmsChanged(rmsdB: Float) {
-            }
-
-            override fun onBufferReceived(buffer: ByteArray?) {
-            }
-
-            override fun onEndOfSpeech() {
-                isListening = false
-                tvSpeak.text = "Processing..."
-            }
-
-            override fun onError(error: Int) {
-                isListening = false
-                tvSpeak.text = "Error: $error"
-                tvHelp.text = getSpeechErrorMessage(error)
-
-                if (error == SpeechRecognizer.ERROR_NO_MATCH) {
-                    speak("I could not understand. Please speak slowly and clearly.")
-                } else {
-                    Toast.makeText(
-                        this@VoiceAssistantActivity,
-                        "Speech error: ${getSpeechErrorMessage(error)}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-
-            override fun onResults(results: Bundle?) {
-                isListening = false
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-
-                if (!matches.isNullOrEmpty()) {
-                    val spokenText = matches[0].trim()
-                    tvSpeak.text = "Heard: $spokenText"
-                    tvHelp.text = matches.joinToString(prefix = "Matches: ")
-                    Toast.makeText(this@VoiceAssistantActivity, spokenText, Toast.LENGTH_SHORT).show()
-                    handleVoiceInput(spokenText)
-                } else {
-                    tvSpeak.text = "No Result"
-                    tvHelp.text = "I could not hear anything"
-                }
-            }
-
-            override fun onPartialResults(partialResults: Bundle?) {
-                val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                if (!matches.isNullOrEmpty()) {
-                    tvHelp.text = "Listening: ${matches[0]}"
-                }
-            }
-
-            override fun onEvent(eventType: Int, params: Bundle?) {
-            }
-        })
+    private fun startListening() {
+        speechRecognizer.startListening(speechIntent)
     }
 
-    private fun startVoiceListening() {
-        if (speechRecognizer == null || isListening) return
-
-        try {
-            tvSpeak.text = "Starting listener..."
-            tvHelp.text = "Please speak now"
-            speechRecognizer?.startListening(speechIntent)
-        } catch (e: Exception) {
-            isListening = false
-            tvSpeak.text = "Start failed"
-            tvHelp.text = e.message ?: "Could not start listening"
-            Toast.makeText(this, "Could not start listening: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun handleVoiceInput(spokenText: String) {
-        val command = spokenText.lowercase(Locale.getDefault())
-        tvSpeak.text = "Heard: $spokenText"
-        Toast.makeText(this, spokenText, Toast.LENGTH_SHORT).show()
-        processCommand(command)
-    }
-
-    private fun processCommand(command: String) {
+    private fun handleVoiceCommand(command: String) {
         when {
-            command.contains("reminder") || command.contains("open reminder") || command.contains("set reminder") -> {
-                speak("Opening reminder screen")
+            command.contains("open chatbot") || command.contains("personal chatbot") -> {
+                speak("Opening chatbot")
+                startActivity(Intent(this, PersonalChatbotS1Activity::class.java))
+            }
+
+            command.contains("open journal") || command.contains("my journal") -> {
+                speak("Opening journal")
+                startActivity(Intent(this, MyJournalActivity::class.java))
+            }
+
+            command.contains("open quick thought") || command.contains("quick thought pad") -> {
+                speak("Opening quick thoughts")
+                startActivity(Intent(this, QuickThoughtsActivity::class.java))
+            }
+
+            command.contains("open reminders") || command.contains("my reminders") -> {
+                speak("Opening reminders")
                 startActivity(Intent(this, AddReminderS1Activity::class.java))
             }
 
-            command.contains("checklist") || command.contains("what is left") || command.contains("left to do") -> {
-                readRemainingChecklistItems()
+            command.contains("add reminder") || command.contains("set reminder") -> {
+                val reminderText = extractReminderText(command)
+                saveReminder(reminderText)
+                Toast.makeText(this, "Reminder added", Toast.LENGTH_SHORT).show()
+                speak("Reminder added successfully")
             }
 
-            command.contains("journal") -> {
-                speak("Opening journal")
+            command.contains("add quick thought") || command.contains("save thought") -> {
+                val thoughtText = extractQuickThoughtText(command)
+                saveQuickThought(thoughtText)
+                Toast.makeText(this, "Quick thought added", Toast.LENGTH_SHORT).show()
+                speak("Quick thought added")
+            }
+
+            command.contains("checklist") && command.contains("unchecked") -> {
+                val response = getChecklistStatusResponse()
+                Toast.makeText(this, response, Toast.LENGTH_SHORT).show()
+                speak(response)
             }
 
             command.contains("schedule") -> {
-                speak("Opening daily schedule")
-            }
-
-            command.contains("quick thought") || command.contains("thought pad") || command.contains("notes") -> {
-                speak("Opening quick thought pad")
+                val response = "Your daily schedule is available in reminders."
+                Toast.makeText(this, response, Toast.LENGTH_SHORT).show()
+                speak(response)
+                startActivity(Intent(this, AddReminderS1Activity::class.java))
             }
 
             else -> {
-                speak("Sorry, I did not understand that command")
+                Toast.makeText(this, "Command not recognized", Toast.LENGTH_SHORT).show()
+                speak("Sorry, I did not understand that command.")
             }
         }
     }
 
-    private fun readRemainingChecklistItems() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid == null) {
-            speak("User is not logged in")
-            return
+    private fun extractReminderText(command: String): String {
+        return when {
+            command.contains("add reminder") ->
+                command.substringAfter("add reminder").trim().ifEmpty { "New reminder" }
+
+            command.contains("set reminder") ->
+                command.substringAfter("set reminder").trim().ifEmpty { "New reminder" }
+
+            else -> "New reminder"
         }
-
-        FirebaseDatabase.getInstance().reference
-            .child("checklists")
-            .child(uid)
-            .child("items")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val pendingItems = mutableListOf<String>()
-
-                for (child in snapshot.children) {
-                    val title = child.child("title").getValue(String::class.java).orEmpty()
-                    val completed = child.child("completed").getValue(Boolean::class.java) ?: false
-
-                    if (!completed && title.isNotEmpty()) {
-                        pendingItems.add(title)
-                    }
-                }
-
-                if (pendingItems.isEmpty()) {
-                    speak("Nothing left to do")
-                } else {
-                    speak("You still need to do ${pendingItems.joinToString()}")
-                }
-            }
-            .addOnFailureListener {
-                speak("I could not read your checklist")
-            }
     }
 
-    private fun speak(text: String) {
-        tvHelp.text = text
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    private fun extractQuickThoughtText(command: String): String {
+        return when {
+            command.contains("add quick thought") ->
+                command.substringAfter("add quick thought").trim().ifEmpty { "New quick thought" }
 
-        if (!isTtsReady) {
-            Toast.makeText(this, "TTS not ready", Toast.LENGTH_SHORT).show()
-            return
+            command.contains("save thought") ->
+                command.substringAfter("save thought").trim().ifEmpty { "New quick thought" }
+
+            else -> "New quick thought"
         }
-
-        textToSpeech?.setSpeechRate(0.9f)
-        textToSpeech?.setPitch(1.0f)
-        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "voice_assistant")
     }
 
-    private fun getSpeechErrorMessage(error: Int): String {
-        return when (error) {
-            SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
-            SpeechRecognizer.ERROR_CLIENT -> "Client side error"
-            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission missing"
-            SpeechRecognizer.ERROR_NETWORK -> "Network error"
-            SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
-            SpeechRecognizer.ERROR_NO_MATCH -> "No speech matched"
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
-            SpeechRecognizer.ERROR_SERVER -> "Server error"
-            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
-            else -> "Unknown error"
+    private fun saveReminder(reminderText: String) {
+        val reminders = getStringList("reminders")
+        reminders.add(reminderText)
+        saveStringList("reminders", reminders)
+    }
+
+    private fun saveQuickThought(thoughtText: String) {
+        val thoughts = getStringList("quick_thoughts")
+        thoughts.add(thoughtText)
+        saveStringList("quick_thoughts", thoughts)
+    }
+
+    private fun getChecklistStatusResponse(): String {
+        val checklist = getStringList("unchecked_checklist")
+        return if (checklist.isEmpty()) {
+            "No, all checklist activities are completed."
+        } else {
+            "Yes, you still have unchecked activities."
+        }
+    }
+
+    private fun getStringList(key: String): MutableList<String> {
+        val json = prefs.getString(key, null) ?: return mutableListOf()
+        val jsonArray = JSONArray(json)
+        val list = mutableListOf<String>()
+        for (i in 0 until jsonArray.length()) {
+            list.add(jsonArray.getString(i))
+        }
+        return list
+    }
+
+    private fun saveStringList(key: String, list: List<String>) {
+        val jsonArray = JSONArray()
+        list.forEach { jsonArray.put(it) }
+        prefs.edit().putString(key, jsonArray.toString()).apply()
+    }
+
+    private fun speak(message: String) {
+        if (isTtsReady) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, "voice_assistant")
+            } else {
+                @Suppress("DEPRECATION")
+                textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null)
+            }
         }
     }
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            val result = textToSpeech?.setLanguage(Locale.US)
-            isTtsReady = result != TextToSpeech.LANG_MISSING_DATA &&
-                    result != TextToSpeech.LANG_NOT_SUPPORTED
-
-            if (isTtsReady) {
-                textToSpeech?.setSpeechRate(0.9f)
-                textToSpeech?.setPitch(1.0f)
-                textToSpeech?.speak(
-                    "Voice assistant is ready",
-                    TextToSpeech.QUEUE_FLUSH,
-                    null,
-                    "startup_test"
-                )
-            } else {
-                tvHelp.text = "Text to speech language not supported"
-            }
-        } else {
-            isTtsReady = false
-            tvHelp.text = "Text to speech initialization failed"
+            textToSpeech.language = Locale.UK
+            isTtsReady = true
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        speechRecognizer?.destroy()
-        textToSpeech?.stop()
-        textToSpeech?.shutdown()
+        speechRecognizer.destroy()
+        textToSpeech.stop()
+        textToSpeech.shutdown()
     }
 }

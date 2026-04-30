@@ -56,3 +56,56 @@ data class ChecklistItem(
     val title: String = "",
     val checked: Boolean = false
 )
+
+data class JournalEntry(
+    val id: String = "",
+    val text: String = "",
+    val mood: String = "",
+    val supportMessage: String = "",
+    val ayahArabic: String = "",
+    val ayahTranslation: String = "",
+    val createdAt: Long = 0L,
+    val formattedDate: String = ""
+)
+
+data class QuranAyahResult(
+    val reference: String = "",
+    val arabic: String = "",
+    val translation: String = ""
+)
+
+data class JournalAnalysis(
+    val mood: String = "",
+    val supportMessage: String = ""
+)
+
+data class ChatMessage(
+    val text: String = "",
+    val isUser: Boolean = false
+)
+
+data class ChatConversationRequest(
+    val title: String = ""
+)
+
+data class ChatConversationResponse(
+    val id: Int = 0,
+    val title: String? = null
+)
+
+data class ChatSendMessageRequest(
+    val content: String = ""
+)
+
+data class ChatApiMessage(
+    val id: Int? = null,
+    val role: String? = null,
+    val content: String? = null
+)
+
+data class ChatSendMessageResponse(
+    val userMessage: ChatApiMessage? = null,
+    val assistantMessage: ChatApiMessage? = null,
+    val reply: String? = null,
+    val error: String? = null
+)

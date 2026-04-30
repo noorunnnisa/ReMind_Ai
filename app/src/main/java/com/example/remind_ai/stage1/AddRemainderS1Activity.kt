@@ -17,12 +17,12 @@ import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.remind_ai.R
+import com.example.remind_ai.model.ReminderModel
 import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import com.example.remind_ai.R
-import com.example.remind_ai.model.ReminderModel
 
 class AddReminderS1Activity : AppCompatActivity() {
 
@@ -34,7 +34,6 @@ class AddReminderS1Activity : AppCompatActivity() {
     private lateinit var etNotes: EditText
     private lateinit var btnSave: Button
 
-    // This instance will store the user's selected date and time
     private val calendar = Calendar.getInstance()
     private val database = FirebaseDatabase.getInstance().reference
 
@@ -53,6 +52,7 @@ class AddReminderS1Activity : AppCompatActivity() {
         createNotificationChannel()
         setupRepeatSpinner()
         setupListeners()
+        applyVoiceReminderData()
     }
 
     private fun setupRepeatSpinner() {
@@ -64,12 +64,60 @@ class AddReminderS1Activity : AppCompatActivity() {
 
     private fun setupListeners() {
         btnBack.setOnClickListener { finish() }
-
         etDate.setOnClickListener { showDatePicker() }
-
         etTime.setOnClickListener { showTimePicker() }
-
         btnSave.setOnClickListener { saveReminder() }
+    }
+
+    private fun applyVoiceReminderData() {
+        val voiceTitle = intent.getStringExtra("voice_title").orEmpty()
+        val voiceDate = intent.getStringExtra("voice_date").orEmpty()
+        val voiceTime = intent.getStringExtra("voice_time").orEmpty()
+
+        if (voiceTitle.isNotBlank()) {
+            etReminderTitle.setText(voiceTitle)
+        }
+
+        if (voiceDate.isNotBlank()) {
+            etDate.setText(voiceDate)
+            parseDateIntoCalendar(voiceDate)
+        }
+
+        if (voiceTime.isNotBlank()) {
+            etTime.setText(voiceTime)
+            parseTimeIntoCalendar(voiceTime)
+        }
+    }
+
+    private fun parseDateIntoCalendar(dateText: String) {
+        try {
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val parsedDate = sdf.parse(dateText)
+            if (parsedDate != null) {
+                val tempCalendar = Calendar.getInstance()
+                tempCalendar.time = parsedDate
+                calendar.set(Calendar.YEAR, tempCalendar.get(Calendar.YEAR))
+                calendar.set(Calendar.MONTH, tempCalendar.get(Calendar.MONTH))
+                calendar.set(Calendar.DAY_OF_MONTH, tempCalendar.get(Calendar.DAY_OF_MONTH))
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun parseTimeIntoCalendar(timeText: String) {
+        try {
+            val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            val parsedTime = sdf.parse(timeText)
+            if (parsedTime != null) {
+                val tempCalendar = Calendar.getInstance()
+                tempCalendar.time = parsedTime
+                calendar.set(Calendar.HOUR_OF_DAY, tempCalendar.get(Calendar.HOUR_OF_DAY))
+                calendar.set(Calendar.MINUTE, tempCalendar.get(Calendar.MINUTE))
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+            }
+        } catch (_: Exception) {
+        }
     }
 
     private fun showDatePicker() {
@@ -82,7 +130,7 @@ class AddReminderS1Activity : AppCompatActivity() {
 
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                 etDate.setText(dateFormat.format(calendar.time))
-                etDate.error = null // Clear error once date is picked
+                etDate.error = null
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -102,7 +150,7 @@ class AddReminderS1Activity : AppCompatActivity() {
 
                 val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
                 etTime.setText(timeFormat.format(calendar.time))
-                etTime.error = null // Clear error once time is picked
+                etTime.error = null
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
@@ -118,7 +166,6 @@ class AddReminderS1Activity : AppCompatActivity() {
         val repeat = spinnerRepeat.selectedItem.toString()
         val notes = etNotes.text.toString().trim()
 
-        // Validation logic
         if (title.isEmpty()) {
             etReminderTitle.error = "Enter reminder title"
             return
@@ -132,8 +179,6 @@ class AddReminderS1Activity : AppCompatActivity() {
             return
         }
 
-        // Use a 1-minute buffer (60000ms) to prevent "past time" errors
-        // if the user spends time typing notes after picking the time.
         val currentTime = System.currentTimeMillis()
         if (calendar.timeInMillis <= currentTime) {
             Toast.makeText(this, "Please select a future time", Toast.LENGTH_SHORT).show()
@@ -152,7 +197,7 @@ class AddReminderS1Activity : AppCompatActivity() {
             timestamp = calendar.timeInMillis
         )
 
-        btnSave.isEnabled = false // Prevent double clicks
+        btnSave.isEnabled = false
         database.child("reminders").child(reminderId).setValue(reminder)
             .addOnSuccessListener {
                 scheduleNotification(reminder)
@@ -166,7 +211,6 @@ class AddReminderS1Activity : AppCompatActivity() {
     }
 
     private fun scheduleNotification(reminder: ReminderModel) {
-        // Explicitly use the full path to the Receiver in the stage1 package
         val intent = Intent(this, com.example.remind_ai.stage1.ReminderReceiver::class.java).apply {
             putExtra("title", reminder.title)
             putExtra("notes", reminder.notes)
@@ -182,7 +226,6 @@ class AddReminderS1Activity : AppCompatActivity() {
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        // Use setExactAndAllowWhileIdle for reliable timing on modern Android
         try {
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
@@ -190,7 +233,6 @@ class AddReminderS1Activity : AppCompatActivity() {
                 pendingIntent
             )
         } catch (e: SecurityException) {
-            // Fallback for cases where exact alarm permission isn't granted
             alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.timestamp, pendingIntent)
         }
     }

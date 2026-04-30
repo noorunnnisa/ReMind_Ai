@@ -5,9 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D1F2EB">
+    android:background="#D1F2EB"
+    android:fitsSystemWindows="true">
 
-    <!-- HEADER -->
     <LinearLayout
         android:id="@+id/headerBg"
         android:layout_width="0dp"
@@ -36,10 +36,9 @@
             android:text="MY CHATBOT"
             android:textColor="#4A3FA0"
             android:textSize="22sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- BOT ICON -->
     <View
         android:id="@+id/profileCircleBg"
         android:layout_width="220dp"
@@ -54,33 +53,40 @@
         android:id="@+id/botIcon"
         android:layout_width="160dp"
         android:layout_height="160dp"
-        android:layout_marginTop="40dp"
-        android:src="@drawable/ic_chatbot"
+        android:layout_marginTop="32dp"
         android:padding="10dp"
+        android:src="@drawable/ic_chatbot"
         app:layout_constraintTop_toBottomOf="@id/headerBg"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- CHAT LIST -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewMessages"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_margin="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"
         app:layout_constraintTop_toBottomOf="@id/botIcon"
         app:layout_constraintBottom_toTopOf="@id/bottomBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:listitem="@android:layout/simple_list_item_1" />
 
-    <!-- BOTTOM INPUT BAR -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="12dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
         android:background="@android:color/white"
         android:elevation="8dp"
+        android:minHeight="72dp"
+        android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -90,11 +96,13 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
             android:src="@android:drawable/ic_input_add"
-            app:tint="#4A3FA0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:tint="#4A3FA0" />
 
         <EditText
             android:id="@+id/editTextMessage"
@@ -106,8 +114,9 @@
             android:hint="Type your message..."
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
-            android:textSize="14sp"
             android:textColor="@android:color/black"
+            android:textColorHint="#7A7A7A"
+            android:textSize="14sp"
             app:layout_constraintStart_toEndOf="@id/btnAdd"
             app:layout_constraintEnd_toStartOf="@id/buttonSend"
             app:layout_constraintTop_toTopOf="parent"
@@ -115,14 +124,17 @@
 
         <ImageButton
             android:id="@+id/buttonSend"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="6dp"
             android:src="@android:drawable/ic_menu_send"
-            app:tint="#4A3FA0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:tint="#4A3FA0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

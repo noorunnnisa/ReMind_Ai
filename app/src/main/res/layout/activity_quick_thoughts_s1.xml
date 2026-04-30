@@ -99,9 +99,11 @@
                 android:gravity="top|start"
                 android:hint="Type something important..."
                 android:inputType="textMultiLine"
-                android:padding="18dp" />
+                android:padding="18dp"
+                android:textColor="#1F2937"
+                android:textColorHint="#9AA5B1"
+                android:textSize="16sp" />
         </com.google.android.material.textfield.TextInputLayout>
-
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveThought"

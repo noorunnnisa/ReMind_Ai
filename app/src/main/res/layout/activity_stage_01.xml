@@ -219,6 +219,7 @@
                 <!-- Chatbot -->
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardChatbot"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_marginEnd="6dp"
@@ -301,6 +302,7 @@
                 <!-- Mood Tracker -->
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardMyJornal"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_marginEnd="6dp"

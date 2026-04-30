@@ -22,11 +22,13 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/profile_circle_bg"
+            android:contentDescription="Back"
             android:padding="8dp"
             android:src="@android:drawable/ic_menu_revert"
             app:tint="#2F2F2F" />
 
         <TextView
+            android:id="@+id/tvHeaderTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -40,13 +42,15 @@
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/headerBg"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/headerBg">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -55,6 +59,7 @@
             android:padding="20dp">
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/voiceMainCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="18dp"
@@ -89,6 +94,7 @@
                         android:textStyle="bold" />
 
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/micCard"
                         android:layout_width="190dp"
                         android:layout_height="190dp"
                         android:layout_marginTop="24dp"
@@ -100,6 +106,7 @@
                             android:id="@+id/micBtn"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:contentDescription="Microphone"
                             android:padding="46dp"
                             android:scaleType="centerInside"
                             android:src="@drawable/ic_mic" />
@@ -124,6 +131,7 @@
             </androidx.cardview.widget.CardView>
 
             <TextView
+                android:id="@+id/tvQuickActions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
